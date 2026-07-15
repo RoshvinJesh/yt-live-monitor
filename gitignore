@@ -1,0 +1,2 @@
+# Never commit your generated config — it contains your YouTube API key
+config.js

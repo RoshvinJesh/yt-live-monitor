@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YT Live Monitor — Configurator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    background:#0b0b0a;
+    font-family:'Space Grotesk',sans-serif;
+    color:#F2EEE3;
+  }
+  body{
+    display:flex;
+    justify-content:center;
+    padding:40px 20px 80px;
+  }
+  .wrap{ width:520px; max-width:100%; }
+
+  h1{
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  p.sub{
+    font-size:12.5px;
+    color:#9A968A;
+    margin:0 0 22px;
+    line-height:1.5;
+  }
+  section{ margin-bottom:20px; }
+  label.field-label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#9A968A;
+    margin-bottom:8px;
+  }
+  input[type=text]{
+    width:100%;
+    background:#1D1D1A;
+    border:1px solid rgba(242,238,227,0.14);
+    border-radius:6px;
+    color:#F2EEE3;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    padding:10px 12px;
+    outline:none;
+  }
+  input[type=text]:focus{ border-color:#E8231B; }
+
+  .btn-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .choice-btn{
+    flex:1;
+    min-width:100px;
+    background:#1D1D1A;
+    border:1px solid rgba(242,238,227,0.14);
+    border-radius:6px;
+    color:#9A968A;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    font-weight:500;
+    padding:10px 8px;
+    cursor:pointer;
+    text-align:center;
+  }
+  .choice-btn.active{ border-color:#E8231B; color:#F2EEE3; }
+
+  .color-row{ display:flex; gap:12px; }
+  .color-row > div{ flex:1; }
+  input[type=color]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:36px;
+    border:1px solid rgba(242,238,227,0.14);
+    border-radius:6px;
+    background:none;
+    cursor:pointer;
+    padding:0;
+  }
+  input[type=color]::-webkit-color-swatch{ border:none; border-radius:5px; }
+
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid rgba(242,238,227,0.08);
+  }
+  .toggle-row:last-child{ border-bottom:none; }
+  .toggle-row span{ font-size:13px; color:#F2EEE3; }
+  .switch{ position:relative; width:36px; height:20px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .switch .track{
+    position:absolute; inset:0;
+    background:#1D1D1A;
+    border:1px solid rgba(242,238,227,0.14);
+    border-radius:10px;
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .switch .track::before{
+    content:'';
+    position:absolute;
+    width:14px; height:14px;
+    left:2px; top:2px;
+    background:#9A968A;
+    border-radius:50%;
+    transition:transform 0.15s, background 0.15s;
+  }
+  .switch input:checked + .track{ background:rgba(232,35,27,0.25); border-color:#E8231B; }
+  .switch input:checked + .track::before{ transform:translateX(16px); background:#E8231B; }
+
+  #downloadBtn{
+    width:100%;
+    background:#E8231B;
+    border:none;
+    border-radius:6px;
+    color:#FFFFFF;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:13px;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  #downloadBtn:hover{ filter:brightness(1.1); }
+
+  #formErr{ font-size:12px; color:#E8231B; margin-top:10px; min-height:16px; }
+
+  .hint{ font-size:11px; color:#75726A; margin-top:16px; line-height:1.5; }
+  .hint a{ color:#E8231B; text-decoration:none; }
+  .hint code{ background:#1D1D1A; padding:2px 5px; border-radius:4px; }
+
+  .confirm{
+    display:none;
+    background:rgba(232,35,27,0.1);
+    border:1px solid rgba(232,35,27,0.4);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:12.5px;
+    line-height:1.5;
+    margin-top:14px;
+  }
+  .confirm code{ background:#1D1D1A; padding:2px 5px; border-radius:4px; }
+
+  /* ---- live preview: mirrors overlay.html's render rules ---- */
+  #previewFrame{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:8px;
+    overflow:hidden;
+    background:#1e1e1a;
+    border:1px solid rgba(242,238,227,0.14);
+  }
+  #previewStage{ display:flex; width:100%; height:100%; padding:16px; }
+  #previewStage.pos-top-left{ align-items:flex-start; justify-content:flex-start; }
+  #previewStage.pos-top-right{ align-items:flex-start; justify-content:flex-end; }
+  #previewStage.pos-bottom-left{ align-items:flex-end; justify-content:flex-start; }
+  #previewStage.pos-bottom-right{ align-items:flex-end; justify-content:flex-end; }
+
+  #previewBar{ display:flex; align-items:center; gap:16px; }
+
+  .theme-minimal .label, .theme-minimal .num, .theme-minimal .clock,
+  .theme-minimal .date .day, .theme-minimal .date .full{
+    text-shadow:0 2px 6px rgba(0,0,0,0.9);
+  }
+  .theme-minimal .eye{ filter:drop-shadow(0 2px 4px rgba(0,0,0,0.9)); }
+
+  .theme-glass{
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.12); border-radius:10px;
+    padding:12px 18px; box-shadow:0 8px 30px rgba(0,0,0,0.35);
+  }
+  .theme-solid{ border-radius:8px; padding:12px 18px; }
+  .theme-outline{ border:2px solid var(--pv-accent,#E8231B); border-radius:8px; padding:10px 16px; }
+  .theme-bordered{
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.12); border-radius:10px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.35); gap:0;
+  }
+  .theme-bordered .cell{ padding:12px 16px; border-left:1px solid rgba(255,255,255,0.14); }
+  .theme-bordered .cell.no-divider{ border-left:none; }
+
+  .cell{ display:flex; align-items:center; gap:8px; }
+  .tally-dot{ width:9px; height:9px; border-radius:50%; background:var(--pv-accent,#E8231B); flex-shrink:0; }
+  .label{ font-size:14px; font-weight:700; letter-spacing:0.05em; color:#FFFFFF; text-transform:uppercase; }
+  .eye{ width:17px; height:17px; flex-shrink:0; }
+  .eye path,.eye circle{ stroke:var(--pv-accent,#E8231B); stroke-width:1.8; fill:none; }
+  .num{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; color:#FFFFFF; }
+  .clock{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:19px; color:#FFFFFF; letter-spacing:0.02em; }
+  .clock .sec{ color:#B0B0B0; font-size:14px; }
+  .date{ display:flex; flex-direction:column; justify-content:center; line-height:1.25; }
+  .date .day{ font-size:13px; font-weight:700; color:#FFFFFF; }
+  .date .full{ font-size:11px; font-weight:700; color:#B0B0B0; letter-spacing:0.02em; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>YT Live Monitor — Configurator</h1>
+  <p class="sub">Set up your overlay here, then download <code>config.js</code> and place it next to <code>overlay.html</code>. That's the only file OBS needs to point at.</p>
+
+  <section>
+    <label class="field-label">Preview</label>
+    <div id="previewFrame">
+      <div id="previewStage" class="pos-top-left">
+        <div id="previewBar" class="theme-minimal">
+          <div class="cell" id="pvCellLive">
+            <div class="tally-dot" id="previewDot"></div>
+            <span class="label">LIVE</span>
+          </div>
+          <div class="cell" id="pvCellViewers">
+            <svg class="eye" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="num">1,204</span>
+          </div>
+          <div class="cell" id="pvCellClock">
+            <span class="clock" id="previewClock">--:--<span class="sec">:--</span></span>
+          </div>
+          <div class="cell" id="pvCellDate">
+            <div class="date">
+              <span class="day" id="previewDay">--</span>
+              <span class="full" id="previewFull">-- -- --</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <label class="field-label">YouTube Data API v3 key</label>
+    <input type="text" id="apiKeyInput" placeholder="AIzaSy...">
+  </section>
+
+  <section>
+    <label class="field-label">Source</label>
+    <div class="btn-row" id="modeToggle">
+      <button type="button" class="choice-btn active" data-mode="video">Video ID</button>
+      <button type="button" class="choice-btn" data-mode="channel">Channel (auto-detect)</button>
+    </div>
+  </section>
+
+  <section id="videoField">
+    <label class="field-label">Live video ID</label>
+    <input type="text" id="videoIdInput" placeholder="dQw4w9WgXcQ">
+  </section>
+
+  <section id="channelField" style="display:none;">
+    <label class="field-label">Channel ID, handle, or URL</label>
+    <input type="text" id="channelIdInput" placeholder="UCxxxx... or @yourhandle or full URL">
+  </section>
+
+  <section>
+    <label class="field-label">Style</label>
+    <div class="btn-row" id="themeToggle">
+      <button type="button" class="choice-btn active" data-theme="minimal">Minimal</button>
+      <button type="button" class="choice-btn" data-theme="glass">Glass panel</button>
+      <button type="button" class="choice-btn" data-theme="solid">Solid panel</button>
+      <button type="button" class="choice-btn" data-theme="outline">Outline</button>
+      <button type="button" class="choice-btn" data-theme="bordered">Bordered</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="color-row">
+      <div>
+        <label class="field-label">Accent color</label>
+        <input type="color" id="colorInput" value="#e8231b">
+      </div>
+      <div id="bgColorWrap">
+        <label class="field-label">Background color</label>
+        <input type="color" id="bgColorInput" value="#141414">
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <label class="field-label">Position on screen</label>
+    <div class="btn-row" id="positionToggle">
+      <button type="button" class="choice-btn active" data-position="top-left">Top left</button>
+      <button type="button" class="choice-btn" data-position="top-right">Top right</button>
+      <button type="button" class="choice-btn" data-position="bottom-left">Bottom left</button>
+      <button type="button" class="choice-btn" data-position="bottom-right">Bottom right</button>
+    </div>
+  </section>
+
+  <section>
+    <label class="field-label">Elements</label>
+    <div class="toggle-row">
+      <span>Live indicator</span>
+      <label class="switch"><input type="checkbox" id="toggleLive" checked><span class="track"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Viewer count</span>
+      <label class="switch"><input type="checkbox" id="toggleViewers" checked><span class="track"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Clock</span>
+      <label class="switch"><input type="checkbox" id="toggleClock" checked><span class="track"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>Date</span>
+      <label class="switch"><input type="checkbox" id="toggleDate" checked><span class="track"></span></label>
+    </div>
+  </section>
+
+  <button id="downloadBtn">Download config.js</button>
+  <div id="formErr"></div>
+
+  <div class="confirm" id="confirmBox">
+    ✓ <code>config.js</code> downloaded. Move it into the same folder as <code>overlay.html</code>, then point OBS's Browser Source at <code>overlay.html</code>.
+  </div>
+
+  <div class="hint">
+    Get a free API key at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">console.cloud.google.com</a> — create a project, enable "YouTube Data API v3", then create an API key (choose "Public data" when asked what you're accessing).<br><br>
+    Video ID is the part after <code>watch?v=</code> in your stream's URL. Channel mode accepts your <code>@handle</code>, full channel URL, or raw <code>UC...</code> ID, and automatically finds whichever video is currently live.<br><br>
+    To change settings later, just come back to this page, adjust, and re-download — it'll overwrite the old <code>config.js</code>.
+  </div>
+</div>
+
+<script>
+(function(){
+  var currentMode = 'video';
+  var currentTheme = 'minimal';
+  var currentPosition = 'top-left';
+
+  function wireChoiceGroup(containerId, attr, onPick){
+    var group = document.getElementById(containerId);
+    group.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        group.querySelectorAll('.choice-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        onPick(btn.getAttribute(attr));
+      });
+    });
+  }
+
+  wireChoiceGroup('modeToggle', 'data-mode', function(v){
+    currentMode = v;
+    document.getElementById('videoField').style.display = v === 'video' ? 'block' : 'none';
+    document.getElementById('channelField').style.display = v === 'channel' ? 'block' : 'none';
+  });
+  wireChoiceGroup('themeToggle', 'data-theme', function(v){
+    currentTheme = v;
+    updatePreview();
+  });
+  wireChoiceGroup('positionToggle', 'data-position', function(v){
+    currentPosition = v;
+    updatePreview();
+  });
+
+  function hexToRgba(hex, alpha){
+    var h = (hex || '#141414').replace('#','');
+    if(h.length === 3){ h = h.split('').map(function(c){ return c+c; }).join(''); }
+    var r = parseInt(h.substring(0,2),16);
+    var g = parseInt(h.substring(2,4),16);
+    var b = parseInt(h.substring(4,6),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+  function updateDividers(bar){
+    var cells = bar.querySelectorAll('.cell');
+    var seenVisible = false;
+    cells.forEach(function(c){
+      var visible = c.style.display !== 'none';
+      c.classList.toggle('no-divider', visible && !seenVisible);
+      if(visible) seenVisible = true;
+    });
+  }
+
+  function updatePreview(){
+    var accent = document.getElementById('colorInput').value;
+    var bg = document.getElementById('bgColorInput').value;
+    var bar = document.getElementById('previewBar');
+
+    document.getElementById('previewStage').className = 'pos-' + currentPosition;
+    bar.className = 'theme-' + currentTheme;
+    document.getElementById('previewFrame').style.setProperty('--pv-accent', accent);
+
+    document.getElementById('bgColorWrap').style.display = currentTheme === 'minimal' ? 'none' : 'block';
+
+    if(currentTheme === 'solid'){ bar.style.background = hexToRgba(bg, 1); }
+    else if(currentTheme === 'glass' || currentTheme === 'bordered'){ bar.style.background = hexToRgba(bg, 0.62); }
+    else if(currentTheme === 'outline'){ bar.style.background = hexToRgba(bg, 0.25); }
+    else { bar.style.background = 'transparent'; }
+
+    document.getElementById('pvCellLive').style.display = document.getElementById('toggleLive').checked ? 'flex' : 'none';
+    document.getElementById('pvCellViewers').style.display = document.getElementById('toggleViewers').checked ? 'flex' : 'none';
+    document.getElementById('pvCellClock').style.display = document.getElementById('toggleClock').checked ? 'flex' : 'none';
+    document.getElementById('pvCellDate').style.display = document.getElementById('toggleDate').checked ? 'flex' : 'none';
+    updateDividers(bar);
+  }
+
+  document.getElementById('colorInput').addEventListener('input', updatePreview);
+  document.getElementById('bgColorInput').addEventListener('input', updatePreview);
+  ['toggleLive','toggleViewers','toggleClock','toggleDate'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', updatePreview);
+  });
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function tickPreviewClock(){
+    var now = new Date();
+    document.getElementById('previewClock').innerHTML =
+      pad(now.getHours()) + ':' + pad(now.getMinutes()) + '<span class="sec">:' + pad(now.getSeconds()) + '</span>';
+    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('previewDay').textContent = days[now.getDay()];
+    document.getElementById('previewFull').textContent = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+  }
+  tickPreviewClock();
+  setInterval(tickPreviewClock, 1000);
+
+  var errEl = document.getElementById('formErr');
+  var confirmBox = document.getElementById('confirmBox');
+
+  document.getElementById('downloadBtn').addEventListener('click', function(){
+    confirmBox.style.display = 'none';
+    var k = document.getElementById('apiKeyInput').value.trim();
+    var cfg = {
+      mode: currentMode,
+      key: k,
+      theme: currentTheme,
+      position: currentPosition,
+      accent: document.getElementById('colorInput').value,
+      background: document.getElementById('bgColorInput').value,
+      showLive: document.getElementById('toggleLive').checked,
+      showViewers: document.getElementById('toggleViewers').checked,
+      showClock: document.getElementById('toggleClock').checked,
+      showDate: document.getElementById('toggleDate').checked
+    };
+
+    if(currentMode === 'video'){
+      cfg.video = document.getElementById('videoIdInput').value.trim();
+      cfg.channel = '';
+      if(!k || !cfg.video){
+        errEl.textContent = 'API key and video ID are both required.';
+        return;
+      }
+    } else {
+      cfg.channel = document.getElementById('channelIdInput').value.trim();
+      cfg.video = '';
+      if(!k || !cfg.channel){
+        errEl.textContent = 'API key and channel ID are both required.';
+        return;
+      }
+    }
+
+    errEl.textContent = '';
+    var fileContent = 'window.YT_LIVE_MONITOR_CONFIG = ' + JSON.stringify(cfg, null, 2) + ';\n';
+    var blob = new Blob([fileContent], { type: 'text/javascript' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'config.js';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    confirmBox.style.display = 'block';
+  });
+
+  updatePreview();
+})();
+</script>
+
+</body>
+</html>
