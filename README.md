@@ -2,6 +2,8 @@
 
 A lightweight browser overlay that shows your YouTube live stream's viewer count, a live/offline indicator, and the current time and date. Built for OBS (or any streaming software with a Browser Source), and designed to run entirely from local files on your own computer.
 
+<img width="399" height="73" alt="Screenshot 2026-07-15 140741" src="https://github.com/user-attachments/assets/bb37ac92-6341-4e04-8787-21937b8cdf4f" />
+
 No backend, no account, no data collection. Your YouTube API key lives only in a `config.js` file on your own computer and is used to talk directly to Google's API.
 
 ## Features
