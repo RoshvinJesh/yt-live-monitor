@@ -1,6 +1,8 @@
 # YT Live Monitor
 
-A lightweight, self-hosted browser overlay that shows your YouTube live stream's viewer count, a live/offline indicator, and the current time and date. Built for OBS (or any streaming software with a Browser Source), but works in any browser.
+A lightweight browser overlay that shows your YouTube live stream's viewer count, a live/offline indicator, and the current time and date. Built for OBS (or any streaming software with a Browser Source), and designed to run entirely from local files on your own computer.
+
+<img width="399" height="73" alt="Screenshot 2026-07-15 140741" src="https://github.com/user-attachments/assets/bb37ac92-6341-4e04-8787-21937b8cdf4f" />
 
 No backend, no account, no data collection. Your YouTube API key lives only in a `config.js` file on your own computer and is used to talk directly to Google's API.
 
@@ -38,11 +40,11 @@ They're connected by a single generated file, **`config.js`**, which must sit in
    - Video ID mode: the string after `watch?v=` in your stream's URL — simplest if you always stream to the same persistent URL
    - Channel mode: paste your `@handle`, full channel URL, or raw `UC...` channel ID — this auto-detects whichever video is currently live, useful if every stream gets a new video ID
 
-3. **Open `configurator.html`** in any browser (double-click it, or visit the hosted version if you're using one). Fill in the fields, watch the live preview update, and click **Download config.js**.
+3. **Open `configurator.html`** locally in any browser (just double-click it). Fill in the fields, watch the live preview update, and click **Download config.js**.
 
 4. **Move the downloaded `config.js`** into the same folder as `overlay.html`.
 
-5. **In OBS**: add a Browser Source pointed at `overlay.html` (local file path, or a hosted URL if you're using GitHub Pages), with a transparent background. Resize/reposition the source however you like.
+5. **In OBS**: add a Browser Source pointed at `overlay.html` using its local file path, with a transparent background. Resize/reposition the source however you like.
 
 ### Changing settings later
 
@@ -51,6 +53,10 @@ Reopen `configurator.html`, adjust anything, and click **Download config.js** ag
 ## Why two files instead of one?
 
 `file://` pages have flaky, browser-dependent local storage behavior — some browsers won't reliably remember settings between opens if everything lives in one page with an in-page setup screen. Writing settings to a real file on disk (`config.js`) sidesteps that entirely: it's just there, every time, until you replace it.
+
+## This runs locally only — not on GitHub Pages
+
+This repo is open source so anyone can read, fork, or self-review the code, but the app itself is meant to be **downloaded and run locally**, not hosted on GitHub Pages. Reason: `config.js` is generated on your own computer and never leaves it. There's no server to upload it to, and committing it into a public repo would publish your API key to the internet. Hosting `overlay.html` on Pages wouldn't work anyway, since there'd be no `config.js` sitting next to it for it to read. Clone or download the repo, and run both files straight from your local folder.
 
 ## API quota
 
